@@ -39,6 +39,21 @@ h2{font:400 clamp(44px,6.4vw,96px)/1 var(--f-display);letter-spacing:.005em;marg
 .skip:focus{top:12px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 
+/* lead capture */
+.mini{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:6px}
+.mini[hidden]{display:none}
+.mini .m{grid-column:1/-1;min-height:1.3em;margin:0;font-size:14px;color:var(--mute)}
+@media (max-width:640px){.mini{grid-template-columns:1fr}}
+.partner{margin-top:26px;border-top:1px solid var(--line);padding-top:18px}
+.partner summary{cursor:pointer;font:500 15px var(--f-body);color:#fff;list-style:none}
+.partner summary::-webkit-details-marker{display:none}
+.partner summary::after{content:" +";color:var(--tally)}
+.partner[open] summary::after{content:" −"}
+.partner form{margin-top:16px;grid-template-columns:repeat(2,1fr);gap:12px;max-width:none}
+.partner form .full{grid-column:1/-1}
+@media (max-width:640px){.partner form{grid-template-columns:1fr}}
+.priv{font:400 12px var(--f-mono);color:var(--mute);margin:0}
+
 /* header */
 .top{position:fixed;left:0;right:0;top:0;z-index:50;display:flex;align-items:center;gap:28px;padding:16px 28px;padding-top:calc(16px + env(safe-area-inset-top,0px));transition:background .3s,backdrop-filter .3s}
 .top.solid{background:rgba(7,9,13,.94);backdrop-filter:blur(14px)}
@@ -396,9 +411,31 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
         <label class="chk" for="er"><input id="er" type="checkbox"> Rush, under 24 hrs</label>
       </div>
       <div class="est-out" role="status" aria-live="polite"><strong id="ep">$600</strong><span id="en"></span></div>
-      <div class="row"><button class="btn sm" type="button" id="eu">Put this estimate in my brief</button></div>
+      <div class="row"><button class="btn sm" type="button" id="em">Email me this estimate</button><button class="lnk" type="button" id="eu">Add it to my brief instead</button></div>
+      <form class="mini" id="ef" hidden novalidate>
+        <label class="hp" aria-hidden="true">Leave empty<input id="ehp" tabindex="-1" autocomplete="off"></label>
+        <label for="en2">Name<input id="en2" autocomplete="name"></label>
+        <label for="ee">Email<input id="ee" type="email" autocomplete="email"></label>
+        <button class="btn sm" type="submit">Send estimate</button>
+        <p class="m" id="efm" role="status"></p>
+        <p class="priv" style="grid-column:1/-1">We use your email only to send this estimate and reply to you.</p>
+      </form>
       <p class="note">Draft rates. An estimate, not a quote. Final price in 48 hours.</p>
     </div>
+    <details class="partner rv" id="partner">
+      <summary>Agency or producer? Request the partner rate card</summary>
+      <form id="pf" novalidate>
+        <label class="hp" aria-hidden="true">Leave empty<input id="php" tabindex="-1" autocomplete="off"></label>
+        <label for="pn">Name<input id="pn" autocomplete="name"></label>
+        <label for="pe">Email<input id="pe" type="email" autocomplete="email"></label>
+        <label for="pc">Company<input id="pc" autocomplete="organization"></label>
+        <label for="pv">Work you might send us
+          <select id="pv"><option>A few jobs a month</option><option>10 to 30 deliverables a month</option><option>30+ deliverables a month</option><option>Not sure yet</option></select></label>
+        <button class="btn sm full" type="submit">Request the partner rate card</button>
+        <p class="msg full" id="pfm" role="status"></p>
+        <p class="priv full">We use your details only to reply with partner pricing.</p>
+      </form>
+    </details>
   </div>
 </section>
 
@@ -494,6 +531,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 (function(){
   var d=document,root=d.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   root.classList.add('js');
+  /* Lead capture. Paste the Apps Script web app URL here (see apps-script/SETUP.md), then rebuild. */
+  var FORM_ENDPOINT='';
+  function post(fields){
+    if(!FORM_ENDPOINT)return Promise.resolve({preview:true});
+    var fd=new FormData();Object.keys(fields).forEach(function(k){fd.append(k,fields[k])});
+    return fetch(FORM_ENDPOINT,{method:'POST',body:fd}).then(function(r){
+      return r.text().then(function(t){var j={};try{j=JSON.parse(t)}catch(e){}
+        if(!r.ok||j.ok===false)throw new Error(j.error||'failed');return j});
+    });
+  }
+  function validEmail(v){return /^\S+@\S+\.\S+$/.test(v)}
   /* price ladder (log scale, USD per month) */
   var MIN=400,MAX=80000,L=Math.log10;
   function pos(v){return (L(v)-L(MIN))/(L(MAX)-L(MIN))*100}
@@ -546,7 +594,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
     var unit=e.u;if(k==='lt'&&q>=25)unit=48;
     var t=q*unit;if(k==='cap'&&t<250){t=250;note=' Minimum job is $250.'}
     if(er.checked)t*=1.5;
-    est={t:t,txt:q+' × '+e.n.toLowerCase().replace(/ \(.*\)/,'')+(er.checked?', rush':'')};
+    est={k:k,q:q,r:er.checked,t:t,txt:q+' × '+e.n.toLowerCase().replace(/ \(.*\)/,'')+(er.checked?', rush':'')};
     ep.textContent=money(t);
     en.textContent=money(unit*(er.checked?1.5:1))+' per '+e.per+' · '+(er.checked?'under 24 hrs':e.tat)+'.'+note;
   }
@@ -556,6 +604,36 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
     var b=d.getElementById('b');b.value='Estimate: '+est.txt+' at about '+money(est.t)+'.\n\n'+b.value;
     d.getElementById('brief').scrollIntoView({behavior:reduce?'auto':'smooth'});
   });
+
+  /* email me this estimate */
+  (function(){
+    var f=d.getElementById('ef'),m=d.getElementById('efm'),btn=f.querySelector('button[type=submit]');
+    d.getElementById('em').addEventListener('click',function(){f.hidden=!f.hidden;if(!f.hidden)d.getElementById('en2').focus()});
+    f.addEventListener('submit',function(e){
+      e.preventDefault();if(d.getElementById('ehp').value)return;
+      var n=d.getElementById('en2').value.trim(),em=d.getElementById('ee').value.trim();
+      if(!n||!validEmail(em)){m.textContent='Add your name and a valid email so we can send it.';return}
+      btn.disabled=true;m.textContent='Sending…';
+      post({kind:'estimate',name:n,email:em,item:est.k,qty:est.q,rush:est.r?'1':''}).then(function(r){
+        m.textContent=r.preview?'Preview only. Not connected yet, so nothing was sent.':'Sent. Check your inbox (and spam) for your estimate.';
+      }).catch(function(){m.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
+    });
+  })();
+
+  /* partner rate card request */
+  (function(){
+    var f=d.getElementById('pf'),m=d.getElementById('pfm'),btn=f.querySelector('button[type=submit]');
+    f.addEventListener('submit',function(e){
+      e.preventDefault();if(d.getElementById('php').value)return;
+      var n=d.getElementById('pn').value.trim(),em=d.getElementById('pe').value.trim();
+      if(!n||!validEmail(em)){m.textContent='Add your name and a valid email so we can reply.';return}
+      btn.disabled=true;m.textContent='Sending…';
+      post({kind:'partner',name:n,email:em,company:d.getElementById('pc').value.trim(),volume:d.getElementById('pv').value}).then(function(r){
+        m.textContent=r.preview?'Preview only. Not connected yet, so nothing was sent.':'Got it. We reply with the partner rate card, usually within a day.';
+      }).catch(function(){m.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
+    });
+  })();
+
 
   d.getElementById('works').addEventListener('click',function(e){
     var b=e.target.closest('[data-est]');if(!b)return;
@@ -654,20 +732,18 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
   function req(){if(!tick){tick=true;requestAnimationFrame(place)}}
   addEventListener('scroll',req,{passive:true});addEventListener('resize',req);place();
   /* form */
-  /* brief form. Set FORM_ENDPOINT to a form service URL (for example a Formspree endpoint) to send for real. */
-  var FORM_ENDPOINT='';
+  /* brief form */
   (function(){
     var f=d.getElementById('f'),msg=d.getElementById('msg'),btn=f.querySelector('button[type=submit]');
     f.addEventListener('submit',function(e){
       e.preventDefault();
       if(d.getElementById('hp').value)return;
       var n=d.getElementById('n').value.trim(),em=d.getElementById('e').value.trim();
-      if(!n||!/^\S+@\S+\.\S+$/.test(em)){msg.textContent='Add your name and a valid email so we can reply.';return}
-      if(!FORM_ENDPOINT){msg.textContent='Preview only. This form is not connected yet, so nothing was sent.';return}
+      if(!n||!validEmail(em)){msg.textContent='Add your name and a valid email so we can reply.';return}
       btn.disabled=true;msg.textContent='Sending…';
-      var fd=new FormData();fd.append('name',n);fd.append('email',em);fd.append('type',d.getElementById('t').value);fd.append('brief',d.getElementById('b').value);
-      fetch(FORM_ENDPOINT,{method:'POST',body:fd,headers:{Accept:'application/json'}}).then(function(r){
-        if(r.ok){msg.textContent='Got it. We reply within 48 hours with a quote and timeline.';f.reset()}else{msg.textContent='Something went wrong. Email hello@dwimlogic.com instead.'}
+      post({kind:'brief',name:n,email:em,type:d.getElementById('t').value,brief:d.getElementById('b').value}).then(function(r){
+        if(r.preview){msg.textContent='Preview only. This form is not connected yet, so nothing was sent.';return}
+        msg.textContent='Got it. We reply within 48 hours with a quote and timeline.';f.reset();
       }).catch(function(){msg.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
     });
   })();
