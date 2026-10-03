@@ -1,0 +1,143 @@
+<title>DWIM Logic Brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two columns on desktop. Left, the structured brief. Right, a live plain-text brief to copy and send. */
+:root{--bg:#eceef0;--panel:#fafbfc;--ink:#10151c;--mute:#566170;--line:#cdd3da;--tally:#d9341f;--tally-ink:#fff;
+ --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;--f-body:"IBM Plex Sans",system-ui,sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1217;--panel:#161c24;--ink:#e9edf2;--mute:#93a0b0;--line:#27303b;--tally:#ff5a45;--tally-ink:#1b0703;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1217;--panel:#161c24;--ink:#e9edf2;--mute:#93a0b0;--line:#27303b;--tally:#ff5a45;--tally-ink:#1b0703;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body)}
+.page{max-width:1100px;margin:0 auto;padding-inline:20px;padding-block:28px 56px}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--tally);margin:0 0 8px}
+h1{font:800 clamp(30px,5vw,48px)/1.02 var(--f-display);letter-spacing:-.03em;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--mute);max-width:60ch;margin:0 0 28px}
+.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+fieldset{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:18px;margin:0 0 14px;display:grid;gap:12px;min-width:0}
+legend{font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding-inline:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.two{grid-template-columns:1fr}}
+label{display:grid;gap:4px;font:500 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mute);min-width:0}
+input,select,textarea{font:16px var(--f-body);padding:11px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;text-transform:none;letter-spacing:0}
+textarea{resize:vertical}
+:focus-visible{outline:2px solid var(--tally);outline-offset:2px}
+.checks{display:flex;gap:8px 16px;flex-wrap:wrap}
+.checks label{display:flex;gap:6px;align-items:center;text-transform:none;letter-spacing:0;font:400 15px var(--f-body);color:var(--ink)}
+.checks input{width:auto}
+.out{position:sticky;top:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:18px;display:grid;gap:12px;min-width:0}
+.out h2{font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:0}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;font:400 13px/1.55 var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;max-height:60vh;overflow:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:500 15px var(--f-body);padding:11px 18px;border-radius:6px;border:1px solid var(--tally);background:var(--tally);color:var(--tally-ink);cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+.addr{font:500 14px var(--f-mono);user-select:all;border:1px dashed var(--line);border-radius:6px;padding:6px 10px}
+.msg{min-height:1.4em;margin:0;color:var(--mute);font-size:14px}
+</style>
+
+<div class="page">
+  <p class="eyebrow">DWIM Logic</p>
+  <h1>Send a brief</h1>
+  <p class="sub">The more specific the brief, the faster and cheaper the job. Fill in what you know. The text on the right updates as you type. Copy it and send it to us.</p>
+
+  <div class="layout">
+    <form id="f" autocomplete="off">
+      <fieldset><legend>You</legend>
+        <div class="two">
+          <label for="name">Name<input id="name"></label>
+          <label for="co">Company<input id="co"></label>
+        </div>
+        <div class="two">
+          <label for="email">Email<input id="email" type="email"></label>
+          <label for="appr">Who approves the final<input id="appr" placeholder="Name and role"></label>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>The job</legend>
+        <div class="two">
+          <label for="type">Type
+            <select id="type"><option>Agency or producer overflow</option><option>Social cutdowns</option><option>Lower thirds and graphics</option><option>Brand spot or explainer</option><option>Captions and accessibility</option><option>Broadcast or streaming delivery</option><option>Monthly content engine</option><option>Other</option></select>
+          </label>
+          <label for="due">Deadline<input id="due" type="date"></label>
+        </div>
+        <label for="goal">Goal and audience<textarea id="goal" rows="3" placeholder="What should this video do, and for whom?"></textarea></label>
+        <label for="deliv">Deliverables<textarea id="deliv" rows="3" placeholder="e.g. 10 versions, 15s and 30s, 9:16 and 1:1, from one 5-minute interview"></textarea></label>
+        <div class="checks" role="group" aria-label="Formats">
+          <label><input type="checkbox" value="16:9"> 16:9</label>
+          <label><input type="checkbox" value="9:16"> 9:16</label>
+          <label><input type="checkbox" value="1:1"> 1:1</label>
+          <label><input type="checkbox" value="4:5"> 4:5</label>
+          <label><input type="checkbox" value="Alpha graphics"> Alpha graphics</label>
+          <label><input type="checkbox" value="Broadcast spec"> Broadcast spec</label>
+        </div>
+        <label class="chk" for="rush" style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font:400 15px var(--f-body);color:var(--ink)"><input id="rush" type="checkbox" style="width:auto"> Rush, under 24 hours (+50%)</label>
+      </fieldset>
+
+      <fieldset><legend>Assets and references</legend>
+        <label for="src">Source footage link<input id="src" placeholder="Drive, Dropbox, Frame.io link"></label>
+        <label for="brand">Brand assets and style guide<input id="brand" placeholder="Link to logos, fonts, colors"></label>
+        <label for="ref">Reference videos<textarea id="ref" rows="2" placeholder="Links to anything you like the look of"></textarea></label>
+      </fieldset>
+
+      <fieldset><legend>Rights and AI</legend>
+        <div class="two">
+          <label for="vo">Voice or likeness
+            <select id="vo"><option>None needed</option><option>Real talent, releases on file</option><option>Synthetic voice or performer, disclose</option><option>Not sure</option></select>
+          </label>
+          <label for="ai">AI use
+            <select id="ai"><option>Fine, disclosed</option><option>Only for editing and captions</option><option>No generated footage</option></select>
+          </label>
+        </div>
+        <label for="notes">Anything else<textarea id="notes" rows="3" placeholder="Languages, captions, music, legal lines, past problems"></textarea></label>
+      </fieldset>
+    </form>
+
+    <aside class="out" aria-live="polite">
+      <h2>Your brief</h2>
+      <pre id="pre"></pre>
+      <div class="row">
+        <button class="btn" type="button" id="copy">Copy brief</button>
+        <button class="btn alt" type="button" id="clear">Clear</button>
+      </div>
+      <p class="msg" id="msg" role="status"></p>
+      <div>
+        <div style="font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:6px">Send it to</div>
+        <span class="addr">hello@dwimlogic.com</span>
+      </div>
+      <p class="msg">Quote and timeline within 48 hours. Two revision rounds included.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  var d=document,ids=['name','co','email','appr','type','due','goal','deliv','src','brand','ref','vo','ai','notes'],KEY='dwim-brief';
+  function val(i){return d.getElementById(i).value.trim()}
+  function fmts(){return [].slice.call(d.querySelectorAll('.checks input:checked')).map(function(c){return c.value}).join(', ')}
+  function line(k,v){return v?k+': '+v+'\n':''}
+  function build(){
+    var t='DWIM LOGIC BRIEF\n\n';
+    t+=line('Name',val('name'))+line('Company',val('co'))+line('Email',val('email'))+line('Approver',val('appr'));
+    t+='\n'+line('Job type',val('type'))+line('Deadline',val('due'))+(d.getElementById('rush').checked?'Rush: under 24 hours\n':'');
+    t+=line('Formats',fmts());
+    if(val('goal'))t+='\nGoal and audience:\n'+val('goal')+'\n';
+    if(val('deliv'))t+='\nDeliverables:\n'+val('deliv')+'\n';
+    var a=line('Source footage',val('src'))+line('Brand assets',val('brand'))+(val('ref')?'References:\n'+val('ref')+'\n':'');
+    if(a)t+='\n'+a;
+    t+='\n'+line('Voice or likeness',val('vo'))+line('AI use',val('ai'));
+    if(val('notes'))t+='\nNotes:\n'+val('notes')+'\n';
+    return t;
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({f:ids.map(val),c:[].slice.call(d.querySelectorAll('.checks input')).map(function(c){return c.checked}),r:d.getElementById('rush').checked}))}catch(e){}}
+  function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(!s)return;ids.forEach(function(i,n){if(s.f[n]!=null)d.getElementById(i).value=s.f[n]});[].slice.call(d.querySelectorAll('.checks input')).forEach(function(c,n){c.checked=!!s.c[n]});d.getElementById('rush').checked=!!s.r}catch(e){}}
+  function render(){d.getElementById('pre').textContent=build();save()}
+  d.getElementById('f').addEventListener('input',render);d.getElementById('f').addEventListener('change',render);
+  d.getElementById('copy').addEventListener('click',function(){
+    var m=d.getElementById('msg'),txt=build();
+    function fallback(){var r=d.createRange();r.selectNodeContents(d.getElementById('pre'));var s=getSelection();s.removeAllRanges();s.addRange(r);m.textContent='Select and copy the text above.'}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){m.textContent='Copied. Paste it into an email to the address below.'},fallback)}else fallback();
+  });
+  d.getElementById('clear').addEventListener('click',function(){d.getElementById('f').reset();render();d.getElementById('msg').textContent='Cleared.'});
+  load();render();
+})();
+</script>
