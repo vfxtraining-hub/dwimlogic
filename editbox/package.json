@@ -1,0 +1,15 @@
+{
+  "name": "dwimlogic-editbox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Edit Box by DWIM Logic: request, free estimate, prepaid hours, logged messages, in-browser review, archive.",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "EDITBOX_DEV_LOGIN=1 node server/server.js",
+    "retention": "node server/retention.js",
+    "retention:dry": "node server/retention.js --dry-run",
+    "test": "node --test test/*.test.js"
+  }
+}
