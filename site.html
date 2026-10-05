@@ -532,7 +532,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
   var d=document,root=d.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   root.classList.add('js');
   /* Lead capture. Paste the Apps Script web app URL here (see apps-script/SETUP.md), then rebuild. */
-  var FORM_ENDPOINT='';
+  var FORM_ENDPOINT='https://script.google.com/macros/s/AKfycbw4HOGgPH72gCN_QBydRSxsvgS7GOoYaGSroSjFTVnVaA8btmlZZNk6tNnKSTnNNeJZkg/exec';
   function post(fields){
     if(!FORM_ENDPOINT)return Promise.resolve({preview:true});
     var fd=new FormData();Object.keys(fields).forEach(function(k){fd.append(k,fields[k])});
