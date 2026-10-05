@@ -5,6 +5,7 @@ AI production agency. Do What I Mean.
 ## Layout
 - `index.html` : the deployable single-page site (images inlined, meta tags, favicon)
 - `site.src.html` + `build_site.py` : source template and build script (`python3 build_site.py` writes `site.html` and `index.html`)
+- `editbox/` + `EDITBOX.md` : The Edit Box at `/editbox` (landing, client portal, editor studio, agent API, live Node server). See `EDITBOX.md`.
 - `site.html` : fragment version used for the Claude artifact preview
 - `assets/` : generated key art and the lookbook stills (`assets/README.md` lists prompts and generation IDs)
 - `lookbook.html`, `build_lookbook.py` : Phase A review page for the reel
