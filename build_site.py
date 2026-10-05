@@ -22,13 +22,17 @@ meta = f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="DWIM Logic is an AI production agency with 30 years of production craft behind it. Fixed-price edits, graphics, captions and spots, checked by a senior producer.">
-<meta name="theme-color" content="#07090d">
+<meta name="theme-color" content="#050505">
 <meta property="og:type" content="website">
 <meta property="og:title" content="DWIM Logic. A one-person army with a 30-year bench.">
 <meta property="og:description" content="AI production agency. Better, faster and cheaper, all three. Fixed price, fixed date, senior QC on every cut.">
 <meta property="og:url" content="https://dwimlogic.com/">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="{fav}">
+<link rel="icon" href="/favicon.svg?v=20260720" type="image/svg+xml">
+<link rel="shortcut icon" href="/favicon.ico?v=20260720" sizes="any">
+<link rel="alternate icon" href="/favicon-32.png?v=20260720" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260720">
+<link rel="manifest" href="/site.webmanifest?v=20260720">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 """

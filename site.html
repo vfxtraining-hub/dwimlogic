@@ -511,7 +511,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
       <p class="kicker rv" style="color:#c4ccd6">Start here</p>
       <h2 class="rv">Send a <em class="s">brief.</em></h2>
       <p class="sub rv">New agency partners get a first cutdown free. Quote in 48 hours.</p>
-      <span class="addr rv">hello@dwimlogic.com</span>
     </div>
     <div class="panel rv">
       <form id="f" novalidate>
@@ -618,7 +617,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
       btn.disabled=true;m.textContent='Sending…';
       post({kind:'estimate',name:n,email:em,item:est.k,qty:est.q,rush:est.r?'1':''}).then(function(r){
         m.textContent=r.preview?'Preview only. Not connected yet, so nothing was sent.':'Sent. Check your inbox (and spam) for your estimate.';
-      }).catch(function(){m.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
+      }).catch(function(){m.textContent='Could not send. Try again in a moment.'}).then(function(){btn.disabled=false});
     });
   })();
 
@@ -632,7 +631,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
       btn.disabled=true;m.textContent='Sending…';
       post({kind:'partner',name:n,email:em,company:d.getElementById('pc').value.trim(),volume:d.getElementById('pv').value}).then(function(r){
         m.textContent=r.preview?'Preview only. Not connected yet, so nothing was sent.':'Got it. We reply with the partner rate card, usually within a day.';
-      }).catch(function(){m.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
+      }).catch(function(){m.textContent='Could not send. Try again in a moment.'}).then(function(){btn.disabled=false});
     });
   })();
 
@@ -746,7 +745,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
       post({kind:'brief',name:n,email:em,type:d.getElementById('t').value,brief:d.getElementById('b').value}).then(function(r){
         if(r.preview){msg.textContent='Preview only. This form is not connected yet, so nothing was sent.';return}
         msg.textContent='Got it. We reply within 48 hours with a quote and timeline.';f.reset();
-      }).catch(function(){msg.textContent='Could not send. Email hello@dwimlogic.com instead.'}).then(function(){btn.disabled=false});
+      }).catch(function(){msg.textContent='Could not send. Try again in a moment.'}).then(function(){btn.disabled=false});
     });
   })();
 
