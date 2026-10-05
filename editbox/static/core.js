@@ -480,7 +480,7 @@
     if (input.timelineAssetId) v.timelineAssetId = str(input.timelineAssetId, 60);
     p.versions.push(v);
     setWork(p, 'awaiting_client', null, now);
-    sys(p, 'Version ' + n + ' posted for review: ' + v.label + (isAgent(actor) ? ' (cut by ' + actor.name + ', checked against the brief)' : '') + '.', now, 'version');
+    sys(p, 'Version ' + n + ' posted for review: ' + v.label + (isAgent(actor) ? ' (cut by ' + actor.name + ')' : '') + '.', now, 'version');
     if (v.note) log(p, actor, v.note, now, { kind: 'version-note' });
     return v;
   }

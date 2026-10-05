@@ -54,7 +54,13 @@
   }
   function go(h) { if (location.hash === h) onRoute(); else location.hash = h; }
   function val(form, name) { var el = form.elements[name]; return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; }
-  function lock(btn, on) { if (btn) { btn.disabled = on; } busy = on; }
+  function lock(btn, on) {
+    busy = on;
+    if (!btn) return;
+    btn.disabled = on;
+    if (on && !btn.querySelector('.spin')) btn.insertAdjacentHTML('afterbegin', '<span class="spin" aria-hidden="true"></span>');
+    if (!on) { var sp = btn.querySelector('.spin'); if (sp) sp.remove(); }
+  }
   var otherPage = EDITOR ? '../portal/' : '../studio/';
 
   /* ---------- chrome ---------- */
@@ -67,7 +73,7 @@
     }
     var h = location.hash || '#/';
     bar.hidden = false;
-    bar.innerHTML = '<div class="wrap"><b>Demo mode</b><span>Nothing is charged and no files leave this browser.</span>' +
+    bar.innerHTML = '<div class="wrap"><b>Demo mode</b><span class="why">Nothing is charged and no files leave this browser.</span>' +
       '<span>View as</span><a class="sw' + (EDITOR ? '' : ' on') + '" href="../portal/' + esc(h) + '">Client</a><a class="sw' + (EDITOR ? ' on' : '') + '" href="../studio/' + esc(h) + '">Editor</a>' +
       '<span class="sp">Demo date ' + esc(fmtDate(S.now())) + '</span>' +
       '<button type="button" data-act="clock" data-days="1">+1 day</button><button type="button" data-act="clock" data-days="31">+31 days</button>' +
@@ -96,10 +102,21 @@
     return r;
   }
 
+  function skeleton() {
+    app.innerHTML = '<div class="wrap view" aria-busy="true"><div class="skel"><i class="s"></i><i class="h"></i><i></i><i class="b"></i><i></i><i class="s"></i></div></div>';
+  }
+  function errorView(e, retry) {
+    var offline = e && e.status === 0;
+    app.innerHTML = '<div class="wrap view"><div class="errbox"><h3>' + (offline ? 'You look offline.' : 'That did not load.') + '</h3><p>' + esc((e && e.message) || 'Something went wrong.') + '</p><div class="row" style="justify-content:center"><button class="btn sm" type="button" id="retry">Try again</button><a class="lnk" href="#/">Back to projects</a></div></div></div>';
+    document.getElementById('retry').addEventListener('click', retry || onRoute);
+  }
+
   function onRoute() {
+    var prev = route;
     route = parse();
     renderBar();
     if (route.name !== 'project' || !route.vid) dropPlayer();
+    if (!(prev.name === 'project' && route.name === 'project' && prev.id === route.id)) skeleton();
     S.me().then(function (j) {
       me = j.me;
       renderWho();
@@ -110,7 +127,7 @@
       if (route.name === 'new') return EDITOR ? go('#/') : newView();
       if (route.name === 'project') return loadProject(true);
       return listView();
-    }).catch(fail);
+    }).catch(function (e) { errorView(e); });
   }
 
   /* ---------- login ---------- */
@@ -146,13 +163,22 @@
       app.innerHTML = '<div class="wrap view"><p class="kicker">The Edit Box · DWIM Logic</p><div class="row" style="justify-content:space-between"><h1>Your <em class="s">projects.</em></h1><a class="btn" href="#/new">Start a project</a></div>' +
         (list.length ? '<div class="plist">' + rows + '</div>' :
           '<div class="empty" style="margin-top:22px"><h3>No projects yet.</h3><p>Describe the job and add your footage or a transfer link. The estimate is free.</p><a class="btn" href="#/new">Start a project</a></div>') + '</div>';
-    }).catch(fail);
+      if (list.length) app.querySelector('.plist').insertAdjacentHTML('beforebegin', clientStats(list));
+    }).catch(function (e) { errorView(e); });
   }
 
   function workPill(p) {
     if (!p.work || p.status === 'purged') return '';
     var a = p.work.assignee;
     return '<span class="pill work w-' + esc(p.work.state) + '">' + esc(C.WORK_STATES[p.work.state] + (a && a.kind === 'agent' ? ' · ' + a.name : '')) + '</span>';
+  }
+
+  function clientStats(list) {
+    var left = list.reduce(function (n, p) { return n + p.balance; }, 0);
+    var review = list.filter(function (p) { return p.versions.some(function (v) { return v.status === 'in_review'; }); }).length;
+    var pay = list.filter(function (p) { return p.status === 'estimated' || p.status === 'depleted'; }).length;
+    var arch = list.filter(function (p) { return p.status === 'archived'; }).length;
+    return '<div class="stats"><div><b>' + Math.round(left * 100) / 100 + '</b><span>Hours left</span></div><div class="' + (review ? 'hot' : '') + '"><b>' + review + '</b><span>Waiting for your review</span></div><div class="' + (pay ? 'hot' : '') + '"><b>' + pay + '</b><span>Need a decision</span></div><div><b>' + arch + '</b><span>Archived</span></div></div>';
   }
 
   function statusLabel(p) {
@@ -205,6 +231,12 @@
       app.querySelector('#est-t').textContent = 'editing hours';
       app.querySelector('#est-m').textContent = 'Minimum to start: ' + C.hrs(e.minHours) + (pack ? ' (' + pack.label + ' pack, ' + C.money(pack.priceCents) + ')' : '') + '.';
     }
+    var q = route.q || new URLSearchParams();
+    if (q.get('d') && C.DELIVERABLES[q.get('d')]) f.elements.deliverable.value = q.get('d');
+    if (q.get('f')) f.elements.finishedMinutes.value = q.get('f');
+    if (q.get('r')) f.elements.footageMinutes.value = q.get('r');
+    if (q.get('v')) f.elements.versions.value = q.get('v');
+    if (q.get('c') && C.COMPLEXITY[q.get('c')]) f.elements.complexity.value = q.get('c');
     f.addEventListener('input', upd);
     upd();
     var drop = app.querySelector('#drop'), input = f.elements.files;
@@ -250,8 +282,9 @@
       var paid = route.q.get('paid') || route.q.get('archived');
       if (paid && !DEMO && CFG.payments === 'stripe') { toast('Payment received. Your balance updates as soon as Stripe confirms.'); pollFor(6); }
     }).catch(function (e) {
-      if (e.status === 404) { app.innerHTML = '<div class="wrap view"><h1>Project not <em class="s">found.</em></h1><p class="sub">It may belong to another account.</p><a class="btn" href="#/">Your projects</a></div>'; return; }
-      fail(e);
+      if (e.status === 404) { app.innerHTML = '<div class="wrap view"><div class="errbox"><h3>Project not found.</h3><p>It may belong to another account, or the link is incomplete.</p><a class="btn sm" href="#/">Your projects</a></div></div>'; return; }
+      if (e.status === 401) return fail(e);
+      errorView(e, function () { skeleton(); loadProject(true); });
     });
   }
   function pollFor(n) { if (n <= 0) return; setTimeout(function () { refresh().then(function () { pollFor(n - 1); }); }, 2500); }
@@ -292,9 +325,9 @@
     var body = tab === 'versions' ? (route.vid ? reviewHtml(p) : versionsHtml(p)) : tab === 'files' ? filesHtml(p) : tab === 'hours' ? hoursHtml(p) : tab === 'brief' ? briefHtml(p) : messagesHtml(p);
     app.innerHTML = '<div class="wrap view"><p class="crumbs"><a href="#/">' + (EDITOR ? 'Studio' : 'Projects') + '</a> / ' + esc(p.title) + '</p>' +
       '<div class="row" style="justify-content:space-between;align-items:flex-end"><div><h1>' + esc(p.title) + '</h1><div class="row" style="gap:12px"><span class="pill ' + esc(p.status) + '">' + esc(statusLabel(p)) + '</span>' +
-      (EDITOR ? workPill(p) : '') + '<span class="who">' + esc(EDITOR ? (p.clientName ? p.clientName + ' · ' : '') + p.clientEmail : 'Opened ' + fmtDate(p.createdAt)) + '</span>' + (openNotes ? '<span class="who">' + openNotes + ' open review note' + (openNotes > 1 ? 's' : '') + '</span>' : '') + '</div></div></div>' +
+      (EDITOR ? workPill(p) : '') + '<span class="who">' + esc(EDITOR ? (p.clientName ? p.clientName + ' · ' : '') + p.clientEmail : 'Opened ' + fmtDate(p.createdAt)) + '</span>' + (openNotes ? '<span class="who">' + openNotes + ' open review note' + (openNotes > 1 ? 's' : '') + '</span>' : '') + '</div></div><button class="copy" type="button" data-act="copy-link">Copy ' + (route.vid ? 'review' : 'project') + ' link</button></div>' +
       '<div class="stepper">' + steps + '</div><div class="guide"><b>Next</b><span>' + esc(C.nextStep(p, ROLE)) + '</span></div>' +
-      '<div class="pgrid"><section><nav class="tabs" aria-label="Project">' + tabs + '</nav>' + body + '</section><aside class="stack">' + sidebarHtml(p) + '</aside></div></div>';
+      '<div class="pgrid' + (route.vid ? ' solo' : '') + '"><section><nav class="tabs" aria-label="Project">' + tabs + '</nav>' + body + '</section><aside class="stack">' + sidebarHtml(p) + '</aside></div></div>';
     restore();
     var m = app.querySelector('.msgs');
     if (m && stick) m.scrollTop = m.scrollHeight;
@@ -432,7 +465,7 @@
   function packsHtml(p, minHours, topup) {
     var rec = C.PRICING.packs.filter(function (k) { return k.hours >= minHours; })[0];
     return '<div class="pgrid-packs">' + C.packsFor(topup ? 0 : minHours).map(function (k) {
-      return '<button type="button" class="pack' + (rec && k.id === rec.id && !topup ? ' rec' : '') + '" data-act="buy" data-pack="' + k.id + '"' + (k.eligible ? '' : ' disabled title="Below the minimum to start"') + '><span class="h">' + k.hours + '</span><span class="l">' + esc(k.label) + '<small>' + C.money(k.perHourCents) + ' per hour</small></span><span class="p">' + C.money(k.priceCents) + '</span></button>';
+      return '<button type="button" class="pack' + (rec && k.id === rec.id && !topup ? ' best' : '') + '" data-act="buy" data-pack="' + k.id + '"' + (k.eligible ? '' : ' disabled title="Below the minimum to start"') + '><span class="h">' + k.hours + '</span><span class="l">' + esc(k.label) + '<small>' + C.money(k.perHourCents) + ' per hour</small></span><span class="p">' + C.money(k.priceCents) + '</span></button>';
     }).join('') + '</div>';
   }
   function sidebarHtml(p) {
@@ -581,6 +614,11 @@
       modal('<h3>Cancel the archive?</h3><p class="sub" style="font-size:15px">It runs to ' + esc(fmtDate(project.archive.currentPeriodEnd)) + ', then you have ' + C.RETENTION.lapsedArchiveGraceDays + ' days to download before files are removed.</p><div class="row"><button class="btn" type="button" data-ok>Cancel subscription</button><button class="lnk" type="button" data-close>Keep it</button></div>', function (m, close) {
         m.querySelector('[data-ok]').addEventListener('click', function () { apply(S.cancelArchive(project.id), 'Subscription will end at the period end.').then(close); });
       });
+    }
+    if (act === 'copy-link') {
+      var url = location.href;
+      if (EDITOR) url = url.replace('/studio/', '/portal/');
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { toast(EDITOR ? 'Client link copied. It opens after they sign in.' : 'Link copied. It opens for anyone signed in to this project.'); }, function () { toast(url); });
     }
     if (act === 'take-back') apply(S.assignWork(project.id, { agent: '' }), 'Back in house.');
     if (act === 'work-state') apply(S.updateWork(project.id, { state: b.getAttribute('data-s') }), 'Work state updated.');

@@ -61,18 +61,19 @@
       if (!a) return Promise.reject(C.EditBoxError(401, 'Sign in first.'));
       return a;
     }
-    function run(fn) {
+    /* Load, apply, save in one synchronous step so tabs sharing localStorage never write stale state. Reads never save. */
+    function run(fn, readOnly) {
       return new Promise(function (resolve) {
         load();
         var a = need();
         if (a.then) { resolve(a); return; }
         var out = fn(a, now());
-        save();
+        if (!readOnly) save();
         resolve(out);
       });
     }
     function view(id) {
-      return run(function (a) { return C.publicProject(C.find(state.db, a, id)); });
+      return run(function (a) { return C.publicProject(C.find(state.db, a, id)); }, true);
     }
     function mut(id, fn) { return run(function (a, t) { var r = fn(a, t); return { project: C.publicProject(C.find(state.db, a, id)), result: r && r.id ? r : undefined }; }); }
 
@@ -91,7 +92,7 @@
         return Promise.resolve({ ok: true, signedIn: true });
       },
       logout: function () { state.client = null; save(); return Promise.resolve(); },
-      listProjects: function () { return run(function (a) { return C.listProjects(state.db, a).map(C.publicProject); }); },
+      listProjects: function () { return run(function (a) { return C.listProjects(state.db, a).map(C.publicProject); }, true); },
       getProject: view,
       createProject: function (input) {
         input.demo = true;
@@ -139,7 +140,7 @@
           var r = C.runRetention(state.db, t, { dryRun: dryRun });
           if (!dryRun) r.deleteKeys.forEach(function (k) { if (/^idb:/.test(k)) idb.del(k); });
           return r;
-        });
+        }, dryRun);
       },
       agents: function () { return Promise.resolve(['grok-bot', 'cursor-agent']); },
       assignWork: function (id, d) { return mut(id, function (a, t) { return C.assignWork(state.db, a, id, d, t); }); },
@@ -148,7 +149,7 @@
         return run(function (a) {
           var k = C.jobPacket(C.find(state.db, a, id), function (x) { return x.key ? 'demo-blob://' + x.id : null; });
           return format === 'md' ? C.jobPacketMarkdown(k) : k;
-        });
+        }, true);
       },
       /* Plays the agent's side of the loop so the demo shows it end to end: claim, read, log hours, post a cut. */
       simulateAgent: function (id) {

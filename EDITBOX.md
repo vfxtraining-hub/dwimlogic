@@ -21,6 +21,18 @@ The main site links to it from the header nav ("Edit Box") and the footer.
 
 Both modes run the same `editbox/static/core.js`, so prices, state changes, permissions and retention behave the same way in both.
 
+## What you can sell today vs what production still needs
+
+**Sell and run in demo mode (share `/editbox` now).** The landing page, live estimate widget, client portal and studio all work without Stripe, S3 or email. Someone can walk a project through request → confirmed estimate → prepaid hours (labelled demo checkout, no card) → logged chat → in-browser review with timestamped notes → agent hand-off / simulate agent run → hours empty → archive offer or file removal. Pricing and retention copy on the marketing page is driven from the same constants. LinkedIn share image: `editbox/static/og.png`.
+
+**Run for real clients (live server).** Deploy `node editbox/server/server.js` behind `dwimlogic.com/editbox` (or serve the whole site from it). Set `EDITBOX_ADMIN_EMAILS` and `EDITBOX_BASE_URL`. Until the next two items are filled in, checkout stays a labelled mock and uploads land on the server disk.
+
+| To take real money | Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Wire a Stripe webhook at `/editbox/api/stripe/webhook`. Optional: `STRIPE_ARCHIVE_PRICE_ID` for the monthly archive. Until then, the ledger records demo/mock payments at $0. |
+| To store real footage | Default is local files under `EDITBOX_DATA_DIR`. For production volume, set `EDITBOX_STORAGE=s3` plus `S3_BUCKET` and keys (AWS, R2 or B2). |
+| To email sign-in links | Set `RESEND_API_KEY`. Without it, outside production, the magic link is shown on screen. |
+| To run the editing agent | Set `EDITBOX_AGENT_KEYS`. The agent API (`GET /editbox/api/agent/jobs`, job packet, claim, upload, version, burn) is implemented; the agent itself (Resolve scripting) is outside this repo. |
+| Phase 2 Blackmagic Cloud | Not connected. The client can flag interest and a version can carry a Resolve/Cloud link. Invite → join shared library → watch the timeline build live is documented below, not built. |
+
 ## Run it
 
 ```bash

@@ -26,7 +26,7 @@
 <body>
 <a class="skip" href="#how">Skip to how it works</a><div class="grain" aria-hidden="true"></div>
 <header class="top" id="topbar"><a class="mark" href="/"><b>DWIM<i>Logic</i></b><span>The Edit Box</span></a>
-  <nav class="links" aria-label="Sections"><a href="#how">How it works</a><a href="#hours">Hours</a><a href="#review">Review</a><a href="#archive">Archive</a><a href="portal/">Sign in</a></nav>
+  <nav class="links" aria-label="Sections"><a href="#how">How it works</a><a href="#estimate">Estimate</a><a href="#hours">Hours</a><a href="#review">Review</a><a href="#archive">Archive</a><a href="portal/">Sign in</a></nav>
   <a class="btn sm" href="portal/#/new">Free estimate</a></header>
 
 <section class="hero" id="top">
@@ -36,7 +36,7 @@
       <p class="by"><span class="rec"></span>DWIM Logic presents</p>
       <h1>The Edit <em>Box.</em></h1>
       <p class="lead">Drop in your footage and tell us what you need. Get a free estimate, prepay the hours, and review every version in your browser. Every message and note stays logged in one private project.</p>
-      <div class="row"><a class="btn" href="portal/#/new">Start a project. The estimate is free.</a><a class="lnk" href="portal/" style="color:#fff">Walk through the demo</a></div>
+      <div class="row"><a class="btn" href="portal/#/new">Start a project</a><a class="btn ghost" href="#estimate">Get a free estimate</a><a class="lnk" href="portal/" style="color:#fff">or walk through the demo</a></div>
       <p class="fine">Senior producer on every job · Delivered for DaVinci Resolve or any NLE · Draft pricing</p>
     </div>
     <div class="mock" aria-hidden="true">
@@ -67,7 +67,28 @@
   </div>
 </section>
 
-<section class="sec" id="hours">
+<section class="sec" id="estimate">
+  <div class="wrap">
+    <p class="kicker rv">Free estimate</p>
+    <h2 class="rv">What would <em class="s">my job</em> take?</h2>
+    <p class="sub rv">A rough range in ten seconds. Start the project and a senior editor confirms it before anything is charged.</p>
+    <div class="calc rv" id="calc">
+      <div class="in">
+        <div><label style="margin-bottom:8px">What you need</label><div class="seg2" id="c-d" role="group" aria-label="What you need"></div></div>
+        <div><label for="c-f" style="margin-bottom:4px">Finished length</label><div class="rangein"><input id="c-f" type="range" min="0.5" max="30" step="0.5" value="2"><output id="c-fo">2 min</output></div></div>
+        <div><label for="c-r" style="margin-bottom:4px">Raw footage</label><div class="rangein"><input id="c-r" type="range" min="0" max="600" step="10" value="60"><output id="c-ro">60 min</output></div></div>
+        <div><label for="c-v" style="margin-bottom:4px">Versions or cutdowns</label><div class="rangein"><input id="c-v" type="range" min="1" max="20" step="1" value="1"><output id="c-vo">1</output></div></div>
+        <div><label style="margin-bottom:8px">Complexity</label><div class="seg2" id="c-c" role="group" aria-label="Complexity"><button type="button" data-c="simple">Simple</button><button type="button" data-c="standard" aria-pressed="true">Standard</button><button type="button" data-c="complex">Complex</button></div></div>
+      </div>
+      <div class="out" aria-live="polite">
+        <div><p class="kicker" style="margin-bottom:6px">Estimated editing time</p><div class="rng" id="c-out">5–7<small>hrs</small></div><p class="min" id="c-min" style="margin:14px 0 0"></p></div>
+        <div><a class="btn" id="c-go" href="portal/#/new">Start this project</a><p class="note">Preliminary. Your confirmed estimate arrives in the project, usually within a working day.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="hours">
   <div class="wrap">
     <p class="kicker rv">Prepaid hours</p>
     <h2 class="rv">Buy the hours. <em class="s">Watch them count down.</em></h2>
@@ -82,7 +103,7 @@
   </div>
 </section>
 
-<section class="sec alt" id="review">
+<section class="sec" id="review">
   <div class="wrap split">
     <div>
       <p class="kicker rv">Review and delivery</p>
@@ -99,7 +120,7 @@
   </div>
 </section>
 
-<section class="sec" id="who">
+<section class="sec alt" id="who">
   <div class="wrap split">
     <div>
       <p class="kicker rv">Who cuts it</p>
@@ -162,6 +183,7 @@
     <div class="share rv"><span>dwimlogic.com/editbox</span><button class="btn xs ghost" type="button" id="copy">Copy link</button></div>
   </div>
 </section>
+<div class="mcta" id="mcta"><a class="btn sm" href="#estimate">Get an estimate</a><a class="btn sm ghost" href="portal/#/new">Start a project</a></div>
 <footer><div class="wrap"><span>The Edit Box · a DWIM Logic service · Do What I Mean</span><span><a href="/">dwimlogic.com</a> · draft pricing · key art generated with AI</span></div></footer>
 <script src="static/core.js"></script>
 <script>
@@ -175,8 +197,36 @@
     [].slice.call(d.querySelectorAll('[data-v=archive]')).forEach(function (e) { e.textContent = C.money(C.PRICING.archive.priceCents) + ' a ' + C.PRICING.archive.interval; });
     [].slice.call(d.querySelectorAll('[data-v=srcdays]')).forEach(function (e) { e.textContent = C.RETENTION.sourceUnusedDays; });
   }
-  var top = d.getElementById('topbar');
-  addEventListener('scroll', function () { top.classList.toggle('solid', scrollY > 40); }, { passive: true });
+  if (C) (function () {
+    var cd = d.getElementById('c-d'), state = { d: 'social', c: 'standard' };
+    var picks = ['social', 'corporate', 'spot', 'longform', 'podcast', 'finish'];
+    var short = { social: 'Social cutdowns', corporate: 'Corporate or event', spot: 'Brand spot', longform: 'Documentary', podcast: 'Podcast', finish: 'Finishing only' };
+    cd.innerHTML = picks.map(function (k) { return '<button type="button" data-d="' + k + '" aria-pressed="' + (k === state.d) + '">' + short[k] + '</button>'; }).join('');
+    var f = d.getElementById('c-f'), r = d.getElementById('c-r'), v = d.getElementById('c-v');
+    function calc() {
+      d.getElementById('c-fo').textContent = f.value + ' min';
+      d.getElementById('c-ro').textContent = r.value >= 60 ? (r.value / 60).toFixed(r.value % 60 ? 1 : 0) + ' hrs' : r.value + ' min';
+      d.getElementById('c-vo').textContent = v.value;
+      var e = C.estimate({ deliverable: state.d, finishedMinutes: f.value, footageMinutes: r.value, versions: v.value, complexity: state.c });
+      var pack = C.PRICING.packs.filter(function (p) { return p.hours === e.minHours; })[0];
+      d.getElementById('c-out').innerHTML = e.low + '–' + e.high + '<small>hrs</small>';
+      d.getElementById('c-min').innerHTML = 'Start with the <b>' + pack.label + ' pack</b>: ' + pack.hours + ' hours for <b>' + C.money(pack.priceCents) + '</b>. Top up only if the job needs it.';
+      d.getElementById('c-go').href = 'portal/#/new?d=' + state.d + '&f=' + f.value + '&r=' + r.value + '&v=' + v.value + '&c=' + state.c;
+    }
+    function seg(el, key) {
+      el.addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        state[key] = b.getAttribute('data-' + key);
+        [].slice.call(el.querySelectorAll('button')).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        calc();
+      });
+    }
+    seg(cd, 'd'); seg(d.getElementById('c-c'), 'c');
+    [f, r, v].forEach(function (x) { x.addEventListener('input', calc); });
+    calc();
+  })();
+  var top = d.getElementById('topbar'), mcta = d.getElementById('mcta');
+  addEventListener('scroll', function () { top.classList.toggle('solid', scrollY > 40); mcta.classList.toggle('on', scrollY > innerHeight * 0.8); }, { passive: true });
   var rv = [].slice.call(d.querySelectorAll('.rv'));
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: .12 });
